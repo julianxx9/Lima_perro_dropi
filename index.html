@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar Pedido</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="form-container">
+        <h2>Completa tus datos para el envío</h2>
+        <p>Estás a un paso de adquirir tu producto.</p>
+        <form id="order-form">
+            <div class="form-group">
+                <label for="full-name">Nombre Completo</label>
+                <input type="text" id="full-name" name="fullName" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Número Celular (10 dígitos)</label>
+                <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}">
+            </div>
+            <div class="form-group">
+                <label for="address">Dirección de Envío</label>
+                <input type="text" id="address" name="address" required>
+            </div>
+            <button type="submit" id="submit-button">Finalizar Pedido</button>
+        </form>
+        <div id="form-message"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

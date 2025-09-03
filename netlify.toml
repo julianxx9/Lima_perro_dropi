@@ -1,0 +1,5 @@
+[build]
+  # Directorio que se va a desplegar.
+  publish = "."
+  # Directorio donde Netlify buscará las funciones serverless.
+  functions = "netlify/functions/"
