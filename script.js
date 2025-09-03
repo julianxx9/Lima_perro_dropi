@@ -11,9 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
         messageDiv.className = '';
 
         const formData = {
-            fullName: form.fullName.value,
-            phone: form.phone.value,
+            name: form.name.value,
+            surname: form.surname.value,
+            state: form.state.value,
+            city: form.city.value,
             address: form.address.value,
+            phone: form.phone.value,
         };
 
         try {

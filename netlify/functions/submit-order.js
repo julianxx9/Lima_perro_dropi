@@ -1,75 +1,69 @@
-// Esta es la función que se ejecuta en el backend de Netlify
-// No te preocupes por instalar paquetes, Netlify maneja `node-fetch`.
 const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
-    // 1. Validar que la petición sea POST
     if (event.httpMethod !== 'POST') {
-        return {
-            statusCode: 405,
-            body: JSON.stringify({ message: 'Método no permitido' }),
-        };
+        return { statusCode: 405, body: JSON.stringify({ message: 'Método no permitido' }) };
     }
 
     try {
-        // 2. Obtener los datos del formulario que envió el script.js
         const data = JSON.parse(event.body);
-        const { fullName, phone, address } = data;
+        const { name, surname, state, city, address, phone } = data;
 
-        // 3. Validar que los datos básicos estén presentes
-        if (!fullName || !phone || !address) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ message: 'Faltan datos en el formulario.' }),
-            };
+        if (!name || !surname || !state || !city || !address || !phone) {
+            return { statusCode: 400, body: JSON.stringify({ message: 'Faltan datos en el formulario.' }) };
         }
 
-        // 4. Obtener el Token de la API de Dropi desde las variables de entorno de Netlify
-        // ¡NUNCA PONGAS EL TOKEN DIRECTAMENTE EN EL CÓDIGO!
         const DROPI_API_TOKEN = process.env.DROPI_API_TOKEN;
         if (!DROPI_API_TOKEN) {
             throw new Error('El token de la API de Dropi no está configurado en el servidor.');
         }
 
-        // 5. Definir el ID del producto que nos indicaste
-        const PRODUCT_ID = '612976';
+        // --- VALORES CONFIGURABLES ---
+        // ID del producto que se está vendiendo.
+        const PRODUCT_ID = 612976;
+        // Precio del producto. El total de la orden se basa en este precio.
+        const PRODUCT_PRICE = 35000; 
+        const TOTAL_ORDER = 35000;
+        // Email de placeholder, ya que no lo pedimos en el form.
+        const CLIENT_EMAIL = "cliente@example.com";
+        // Tipo de cobro. Puede ser "CON RECAUDO" o "SIN RECAUDO".
+        const RATE_TYPE = "CON RECAUDO";
+        // --------------------------
 
-        // 6. Construir el cuerpo de la petición para la API de Dropi
-        // **IMPORTANTE**: Esta estructura es una suposición. Debes validarla
-        // con la documentación oficial de la API de Dropi.
         const dropiPayload = {
-            customer: {
-                name: fullName,
-                phone: phone,
-                address: address,
-            },
-            items: [
+            state: state.toUpperCase(),
+            city: city.toUpperCase(),
+            client_email: CLIENT_EMAIL,
+            name: name,
+            surname: surname,
+            dir: address,
+            notes: "Pedido desde formulario web",
+            payment_method_id: 1,
+            phone: phone,
+            rate_type: RATE_TYPE,
+            type: "FINAL_ORDER",
+            total_order: TOTAL_ORDER,
+            products: [
                 {
-                    productId: PRODUCT_ID,
-                    quantity: 1,
-                },
-            ],
-            // Aquí podrían ir otros campos que Dropi requiera, como:
-            // source: 'Netlify Form',
-            // payment_method: 'cash_on_delivery'
+                    id: PRODUCT_ID,
+                    price: PRODUCT_PRICE,
+                    variation_id: null,
+                    quantity: 1
+                }
+            ]
         };
 
-        // 7. Realizar la llamada a la API de Dropi
-        // **IMPORTANTE**: Se ha actualizado la URL base. La ruta exacta (/api/orders) 
-        // debe ser confirmada con la documentación oficial de Dropi.
-        const dropiApiUrl = 'https://app.dropi.co/api/orders';
+        const dropiApiUrl = 'https://api.dropi.co/api/orders/myorders';
 
         const response = await fetch(dropiApiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // Así es como se suelen enviar los tokens de autorización
                 'Authorization': `Bearer ${DROPI_API_TOKEN}`,
             },
             body: JSON.stringify(dropiPayload),
         });
 
-        // 8. Manejar la respuesta de Dropi
         if (!response.ok) {
             const errorBody = await response.text();
             console.error('Error de la API de Dropi:', errorBody);
@@ -78,12 +72,11 @@ exports.handler = async (event) => {
 
         const responseData = await response.json();
 
-        // 9. Enviar una respuesta de éxito al frontend
         return {
             statusCode: 200,
             body: JSON.stringify({ 
                 message: 'Pedido creado exitosamente', 
-                orderId: responseData.id // Suponiendo que Dropi devuelve un ID
+                orderId: responseData.id
             }),
         };
 
